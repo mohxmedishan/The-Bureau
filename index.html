@@ -1,1430 +1,2587 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>The Bureau</title>
+<title>The Bureau of Cipher and Leaders</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          fontFamily: {
-            mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
-          },
-          colors: {
-            bureau: {
-              50: "#f4f7f4",
-              100: "#dfe8df",
-              200: "#b9cdb9",
-              300: "#91ad91",
-              400: "#6f916f",
-              500: "#527552",
-              600: "#3e5d3e",
-              700: "#304830",
-              800: "#223522",
-              900: "#172317"
-            }
-          }
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      fontFamily: {
+        mono: ["JetBrains Mono", "ui-monospace", "monospace"]
+      },
+      colors: {
+        bureau: {
+          bg: "#070907",
+          panel: "#0d110d",
+          line: "#273127",
+          green: "#8faa8f",
+          bright: "#c7dbc7",
+          muted: "#617061"
         }
       }
     }
-  </script>
+  }
+}
+</script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
 
-    html {
-      scroll-behavior: smooth;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      background: #070907;
-      color: #d7e0d7;
-      font-family: "JetBrains Mono", ui-monospace, monospace;
-      overflow-x: hidden;
-    }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #070907;
+  color: #d9e1d9;
+  font-family: "JetBrains Mono", monospace;
+}
 
-    /* Subtle CRT scanlines */
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.035;
-      background:
-        repeating-linear-gradient(
-          to bottom,
-          transparent 0px,
-          transparent 3px,
-          rgba(255,255,255,0.35) 4px
-        );
-    }
+body {
+  overflow-x: hidden;
+}
 
-    /* Very subtle terminal glow */
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9998;
-      background: radial-gradient(
-        circle at center,
-        transparent 35%,
-        rgba(0,0,0,0.35) 100%
-      );
-    }
+/* Atmospheric background */
 
-    .bureau-border {
-      border: 1px solid rgba(116, 145, 116, 0.25);
-    }
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(115,145,115,.08),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(75,105,75,.04),
+      transparent 30%
+    ),
+    #070907;
+}
 
-    .bureau-panel {
-      background: rgba(10, 13, 10, 0.88);
-      border: 1px solid rgba(116, 145, 116, 0.22);
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.01) inset,
-        0 15px 60px rgba(0,0,0,0.35);
-    }
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: .025;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 3px,
+      white 4px
+    );
+}
 
-    .green-glow {
-      text-shadow:
-        0 0 8px rgba(130, 180, 130, 0.45),
-        0 0 20px rgba(130, 180, 130, 0.12);
-    }
+/* Generic */
 
-    .terminal-cursor::after {
-      content: "▋";
-      animation: blink 1s infinite;
-      margin-left: 3px;
-    }
+.hidden-page {
+  display: none !important;
+}
 
-    @keyframes blink {
-      0%, 45% { opacity: 1; }
-      46%, 100% { opacity: 0; }
-    }
+.fade {
+  animation: fade .7s ease forwards;
+}
 
-    .fade-up {
-      animation: fadeUp 0.5s ease forwards;
-    }
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+.glow {
+  text-shadow:
+    0 0 8px rgba(150,190,150,.45),
+    0 0 30px rgba(150,190,150,.12);
+}
 
-    .pulse-dot {
-      animation: pulseDot 2s infinite;
-    }
+.panel {
+  background: rgba(13,17,13,.86);
+  border: 1px solid rgba(130,160,130,.18);
+  box-shadow:
+    0 20px 70px rgba(0,0,0,.28),
+    inset 0 1px rgba(255,255,255,.015);
+}
 
-    @keyframes pulseDot {
-      0%, 100% {
-        opacity: .45;
-      }
-      50% {
-        opacity: 1;
-      }
-    }
+.panel:hover {
+  border-color: rgba(150,180,150,.28);
+}
 
-    .sigil-ring {
-      animation: rotateSlow 18s linear infinite;
-    }
+button {
+  font-family: inherit;
+}
 
-    .sigil-ring.reverse {
-      animation-direction: reverse;
-      animation-duration: 25s;
-    }
+::selection {
+  background: rgba(130,170,130,.25);
+}
 
-    @keyframes rotateSlow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+input,
+textarea,
+select {
+  font-family: inherit;
+}
 
-    textarea {
-      resize: vertical;
-    }
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(145,175,145,.5);
+  box-shadow: 0 0 0 3px rgba(120,160,120,.05);
+}
 
-    ::selection {
-      background: rgba(110, 150, 110, 0.3);
-    }
+/* Loading */
 
-    .nav-active {
-      background: rgba(110, 145, 110, 0.1);
-      border-color: rgba(130, 170, 130, 0.35) !important;
-      color: #cbdacb;
-    }
+.loader-line {
+  width: 0;
+  animation: loadLine 2.2s ease forwards;
+}
 
-    .mobile-menu {
-      animation: menuIn .2s ease forwards;
-    }
+@keyframes loadLine {
+  from { width: 0; }
+  to { width: 100%; }
+}
 
-    @keyframes menuIn {
-      from {
-        opacity: 0;
-        transform: translateY(-5px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  </style>
+/* Bureau symbol */
+
+.bureau-symbol {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.bureau-symbol::before,
+.bureau-symbol::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(150,180,150,.35);
+  transform: rotate(45deg);
+}
+
+.bureau-symbol::after {
+  inset: 20px;
+  transform: rotate(0deg);
+  border-color: rgba(150,180,150,.18);
+}
+
+.symbol-core {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a8c0a8;
+  font-size: 20px;
+}
+
+/* Navigation */
+
+.nav-btn {
+  transition: .25s ease;
+}
+
+.nav-btn:hover {
+  background: rgba(150,180,150,.05);
+  color: #c9d8c9;
+}
+
+.nav-btn.active {
+  background: rgba(130,165,130,.09);
+  border-color: rgba(140,175,140,.22);
+  color: #c7d7c7;
+}
+
+/* Cards */
+
+.card-hover {
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    background .25s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(145,175,145,.35);
+  background: rgba(20,25,20,.9);
+}
+
+/* Sigil */
+
+.sigil {
+  width: 240px;
+  height: 240px;
+  position: relative;
+}
+
+.sigil-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(140,175,140,.22);
+}
+
+.ring1 {
+  inset: 5px;
+  animation: spin 22s linear infinite;
+}
+
+.ring2 {
+  inset: 35px;
+  border-style: dashed;
+  animation: spin 15s linear infinite reverse;
+}
+
+.ring3 {
+  inset: 70px;
+  animation: spin 11s linear infinite;
+}
+
+.sigil-core {
+  position: absolute;
+  inset: 90px;
+  border: 1px solid rgba(170,200,170,.5);
+  transform: rotate(45deg);
+}
+
+.sigil-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b5ccb5;
+  text-shadow: 0 0 15px rgba(150,190,150,.5);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Toast */
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  max-width: 360px;
+  z-index: 10000;
+  transform: translateY(30px);
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s ease;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Chat */
+
+.chat-message {
+  animation: fade .3s ease;
+}
+
+/* Game */
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.game-cell {
+  aspect-ratio: 1;
+  border: 1px solid rgba(130,160,130,.15);
+  background: rgba(255,255,255,.015);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.game-cell:hover {
+  border-color: rgba(160,190,160,.35);
+}
+
+.game-cell.lit {
+  background: rgba(150,180,150,.35);
+  box-shadow: 0 0 15px rgba(150,180,150,.18);
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+
+  .bureau-symbol {
+    width: 70px;
+    height: 70px;
+  }
+
+  .sigil {
+    transform: scale(.82);
+  }
+
+}
+
+</style>
 </head>
 
 <body class="dark">
 
-  <!-- =========================
-       ENTRY GATE
-  ========================== -->
 
-  <section
-    id="entryGate"
-    class="min-h-screen flex items-center justify-center px-5 py-10"
-  >
-    <div class="w-full max-w-2xl">
+<!-- =========================================================
+     SPLASH SCREEN
+========================================================= -->
 
-      <div class="flex items-center justify-between mb-5 text-[10px] tracking-[0.25em] uppercase text-gray-600">
-        <span>THE BUREAU // PRIVATE TERMINAL</span>
-        <span id="entryClock">--:--:--</span>
+<section
+  id="splash"
+  class="fixed inset-0 z-[100] bg-[#070907] flex items-center justify-center px-6"
+>
+
+  <div class="w-full max-w-xl text-center">
+
+    <div class="bureau-symbol mx-auto mb-9">
+      <div class="symbol-core">◆</div>
+    </div>
+
+    <div class="text-[9px] tracking-[.45em] text-gray-600 mb-5">
+      ESTABLISHING SECURE CHANNEL
+    </div>
+
+    <h1 class="text-2xl sm:text-4xl tracking-[.12em] text-gray-200 glow">
+      THE BUREAU
+    </h1>
+
+    <div class="text-[9px] sm:text-[10px] tracking-[.25em] text-gray-600 mt-3">
+      OF CIPHER AND LEADERS
+    </div>
+
+    <div class="mt-10 h-px bg-white/5 overflow-hidden">
+      <div class="loader-line h-full bg-gray-500"></div>
+    </div>
+
+    <div
+      id="bootText"
+      class="mt-4 text-[9px] text-gray-700 tracking-wider"
+    >
+      INITIALIZING
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     INVITATION GATE
+========================================================= -->
+
+<section
+  id="invitation"
+  class="hidden-page min-h-screen flex items-center justify-center px-5 py-10"
+>
+
+  <div class="w-full max-w-2xl">
+
+    <div class="flex justify-between text-[9px] tracking-[.25em] text-gray-700 mb-5">
+      <span>PRIVATE ACCESS TERMINAL</span>
+      <span>INVITATION REQUIRED</span>
+    </div>
+
+    <div class="panel rounded-2xl overflow-hidden">
+
+      <div class="px-6 py-4 border-b border-white/5 flex justify-between">
+
+        <span class="text-[9px] tracking-wider text-gray-600">
+          BUREAU / ENTRY
+        </span>
+
+        <span class="text-[9px] text-gray-700">
+          CHANNEL 00
+        </span>
+
       </div>
 
-      <div class="bureau-panel rounded-2xl overflow-hidden">
+      <div class="p-7 sm:p-10">
 
-        <!-- Terminal top bar -->
-        <div class="h-10 px-4 flex items-center justify-between border-b border-white/5 bg-black/20">
-          <div class="flex gap-2">
-            <span class="w-2 h-2 rounded-full bg-gray-700"></span>
-            <span class="w-2 h-2 rounded-full bg-gray-700"></span>
-            <span class="w-2 h-2 rounded-full bg-gray-700"></span>
-          </div>
-
-          <span class="text-[10px] tracking-[0.2em] text-gray-600">
-            SECURE SESSION
-          </span>
+        <div class="text-[9px] text-gray-600 mb-3">
+          <span class="text-gray-400">$</span>
+          invitation.verify
         </div>
 
-        <div class="p-7 sm:p-12">
+        <h2 class="text-2xl sm:text-3xl text-gray-200 mb-4">
+          You found the door.
+        </h2>
 
-          <div class="flex items-center gap-4 mb-10">
-            <div class="w-12 h-12 rounded-xl border border-bureau-400/30 flex items-center justify-center">
-              <span class="text-xl text-bureau-300">◆</span>
+        <p class="text-xs text-gray-600 leading-7 max-w-xl">
+          The Bureau of Cipher and Leaders is a private community built
+          around ideas, creativity, communication, curiosity, and the
+          occasional ridiculous experiment.
+        </p>
+
+        <div class="grid sm:grid-cols-3 gap-3 mt-8">
+
+          <div class="border border-white/5 rounded-xl p-4">
+            <div class="text-lg text-gray-400 mb-3">◇</div>
+            <div class="text-[10px] text-gray-400 mb-2">
+              CONNECT
             </div>
-
-            <div>
-              <p class="text-[10px] tracking-[0.35em] text-gray-600 uppercase">
-                Directorate
-              </p>
-              <h1 class="text-xl tracking-[0.15em] text-gray-200">
-                THE BUREAU
-              </h1>
+            <div class="text-[9px] text-gray-700 leading-5">
+              Meet people and exchange ideas.
             </div>
           </div>
 
-          <div class="space-y-5">
-
-            <div class="text-sm text-gray-500">
-              <span class="text-bureau-300">$</span>
-              connection.status
+          <div class="border border-white/5 rounded-xl p-4">
+            <div class="text-lg text-gray-400 mb-3">◆</div>
+            <div class="text-[10px] text-gray-400 mb-2">
+              CREATE
             </div>
-
-            <div class="text-sm text-gray-400">
-              <span class="text-bureau-300">></span>
-              Private terminal available.
+            <div class="text-[9px] text-gray-700 leading-5">
+              Share projects, thoughts, and discoveries.
             </div>
+          </div>
 
-            <div class="text-sm text-gray-500 leading-7">
-              The Bureau is a quiet space for ideas, observations,
-              announcements, and anonymous contributions.
+          <div class="border border-white/5 rounded-xl p-4">
+            <div class="text-lg text-gray-400 mb-3">△</div>
+            <div class="text-[10px] text-gray-400 mb-2">
+              EXPLORE
             </div>
+            <div class="text-[9px] text-gray-700 leading-5">
+              Games, archives, challenges, and hidden rooms.
+            </div>
+          </div>
 
-            <div class="border-l border-bureau-400/30 pl-4 py-2 text-xs text-gray-600 leading-6">
-              No password required.<br />
-              No public profile required.<br />
-              A temporary identity will be created for this browser.
-            </div>
+        </div>
+
+
+        <div class="mt-9">
+
+          <label class="text-[9px] tracking-wider text-gray-600">
+            INVITATION CODE
+          </label>
+
+          <div class="flex gap-2 mt-2">
+
+            <input
+              id="inviteInput"
+              type="text"
+              placeholder="Enter your invitation"
+              class="flex-1 min-w-0 bg-black/30 border border-white/10 rounded-xl px-4 py-4 text-xs text-gray-300"
+            >
 
             <button
-              id="initiateBtn"
-              onclick="initiateProtocol()"
-              class="group w-full sm:w-auto mt-5 px-7 py-4 rounded-xl
-                     border border-bureau-400/30
-                     bg-bureau-900/30
-                     hover:bg-bureau-800/50
-                     hover:border-bureau-300/50
-                     transition-all duration-300"
+              onclick="verifyInvitation()"
+              class="px-5 rounded-xl border border-gray-500/30 text-[9px] tracking-wider text-gray-400 hover:text-gray-200 hover:bg-white/5 transition"
             >
-              <span class="text-xs tracking-[0.22em] text-bureau-200">
-                INITIATE PROTOCOL
-              </span>
-
-              <span class="ml-3 text-gray-600 group-hover:text-bureau-300 transition">
-                →
-              </span>
+              VERIFY
             </button>
 
-            <p class="text-[9px] text-gray-700 pt-2">
-              This demo stores your session locally in this browser.
-            </p>
-
           </div>
-        </div>
-      </div>
 
-      <div class="mt-4 flex justify-between text-[9px] tracking-wider text-gray-700 uppercase">
-        <span>Quiet infrastructure</span>
-        <span>Local session</span>
+          <div class="mt-3 text-[8px] text-gray-700">
+            Demo invitation: <span class="text-gray-500">CIPHER-2026</span>
+          </div>
+
+          <div
+            id="inviteError"
+            class="hidden mt-4 text-[9px] text-gray-500"
+          ></div>
+
+        </div>
+
       </div>
 
     </div>
-  </section>
+
+  </div>
+
+</section>
 
 
-  <!-- =========================
-       MAIN APP
-  ========================== -->
+<!-- =========================================================
+     BUREAU BRIEFING
+========================================================= -->
 
-  <div id="app" class="hidden min-h-screen">
+<section
+  id="briefing"
+  class="hidden-page min-h-screen flex items-center justify-center px-5 py-10"
+>
 
-    <!-- Mobile Header -->
-    <header class="lg:hidden sticky top-0 z-50 bg-[#070907]/95 backdrop-blur border-b border-white/5">
-      <div class="h-16 px-5 flex items-center justify-between">
+  <div class="w-full max-w-4xl">
 
-        <div>
-          <div class="text-sm tracking-[0.18em] text-gray-200">
-            THE BUREAU
+    <div class="grid lg:grid-cols-[.8fr_1.2fr] gap-5">
+
+      <div class="panel rounded-2xl p-8 flex flex-col justify-center">
+
+        <div class="bureau-symbol mb-8">
+          <div class="symbol-core">◆</div>
+        </div>
+
+        <div class="text-[9px] tracking-[.3em] text-gray-600">
+          CLASSIFIED BRIEFING
+        </div>
+
+        <h2 class="text-3xl text-gray-200 mt-3 leading-tight">
+          What is<br>
+          <span class="text-gray-400">
+            The Bureau?
+          </span>
+        </h2>
+
+      </div>
+
+
+      <div class="panel rounded-2xl p-8">
+
+        <div class="text-[10px] text-gray-600 mb-7">
+          DIRECTIVE // 001
+        </div>
+
+        <div class="space-y-6 text-xs text-gray-500 leading-7">
+
+          <p>
+            The Bureau of Cipher and Leaders is a private community
+            where members can communicate, collaborate, compete,
+            and build things together.
+          </p>
+
+          <p>
+            Members choose how they are represented inside the Bureau.
+            Leaders maintain the member directory so the community
+            can stay organized and welcoming.
+          </p>
+
+          <p>
+            The point isn't secrecy for the sake of secrecy.
+            The atmosphere is simply different here.
+            Less noise. More curiosity.
+          </p>
+
+        </div>
+
+        <div class="border-t border-white/5 mt-8 pt-7">
+
+          <div class="text-[9px] text-gray-600 mb-4">
+            MEMBER BENEFITS
           </div>
-          <div class="text-[8px] tracking-[0.25em] text-gray-600">
-            PRIVATE TERMINAL
+
+          <div class="grid sm:grid-cols-2 gap-3">
+
+            <div class="text-[10px] text-gray-500">
+              ◆ Private community spaces
+            </div>
+
+            <div class="text-[10px] text-gray-500">
+              ◆ Member challenges
+            </div>
+
+            <div class="text-[10px] text-gray-500">
+              ◆ Creative projects
+            </div>
+
+            <div class="text-[10px] text-gray-500">
+              ◆ Games and puzzles
+            </div>
+
           </div>
+
         </div>
 
         <button
-          onclick="toggleMobileMenu()"
-          class="w-10 h-10 rounded-lg border border-white/10 text-gray-400"
+          onclick="showPage('registration')"
+          class="mt-9 w-full py-4 rounded-xl border border-gray-500/30 hover:bg-white/5 text-[9px] tracking-[.2em] text-gray-400 hover:text-gray-200 transition"
         >
-          ☰
+          CONTINUE TO IDENTITY REGISTRATION →
         </button>
 
       </div>
 
-      <div id="mobileMenu" class="hidden mobile-menu px-4 pb-4">
-        <nav id="mobileNav" class="space-y-2"></nav>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     REGISTRATION
+========================================================= -->
+
+<section
+  id="registration"
+  class="hidden-page min-h-screen flex items-center justify-center px-5 py-10"
+>
+
+  <div class="w-full max-w-2xl">
+
+    <div class="text-center mb-8">
+
+      <div class="text-[9px] tracking-[.3em] text-gray-600 mb-3">
+        IDENTITY TERMINAL
       </div>
-    </header>
+
+      <h2 class="text-2xl text-gray-200">
+        Establish your Bureau identity.
+      </h2>
+
+      <p class="text-[10px] text-gray-700 mt-3">
+        Choose the name other members will see.
+      </p>
+
+    </div>
 
 
-    <div class="min-h-screen lg:flex">
+    <div class="panel rounded-2xl p-7 sm:p-9">
 
-      <!-- =========================
-           SIDEBAR
-      ========================== -->
+      <div class="space-y-6">
 
-      <aside class="hidden lg:flex w-64 shrink-0 border-r border-white/5 min-h-screen flex-col">
+        <!-- Username -->
 
-        <div class="p-6 border-b border-white/5">
+        <div>
 
-          <div class="flex items-center gap-3">
+          <label class="text-[9px] tracking-wider text-gray-600">
+            BUREAU USERNAME *
+          </label>
 
-            <div class="w-10 h-10 rounded-lg border border-bureau-400/30 flex items-center justify-center">
-              <span class="text-bureau-300">◆</span>
-            </div>
+          <input
+            id="username"
+            maxlength="24"
+            placeholder="e.g. CipherFox"
+            class="w-full mt-2 bg-black/30 border border-white/10 rounded-xl px-4 py-4 text-xs text-gray-300"
+          >
 
-            <div>
-              <div class="text-sm tracking-[0.15em] text-gray-200">
-                THE BUREAU
-              </div>
-
-              <div class="text-[8px] tracking-[0.25em] text-gray-600">
-                PRIVATE TERMINAL
-              </div>
-            </div>
-
+          <div class="text-[8px] text-gray-700 mt-2">
+            This is your public Bureau identity.
           </div>
 
         </div>
 
 
-        <div class="p-4 flex-1">
+        <!-- Contact -->
 
-          <div class="px-3 mb-3 text-[9px] tracking-[0.25em] text-gray-700 uppercase">
-            Secure Channels
+        <div>
+
+          <label class="text-[9px] tracking-wider text-gray-600">
+            CONTACT HANDLE <span class="text-gray-700">(OPTIONAL)</span>
+          </label>
+
+          <div class="grid grid-cols-[110px_1fr] gap-2 mt-2">
+
+            <select
+              id="contactType"
+              class="bg-black/30 border border-white/10 rounded-xl px-3 text-xs text-gray-500"
+            >
+              <option>Instagram</option>
+              <option>Discord</option>
+              <option>WhatsApp</option>
+            </select>
+
+            <input
+              id="contactHandle"
+              maxlength="80"
+              placeholder="@username"
+              class="bg-black/30 border border-white/10 rounded-xl px-4 py-4 text-xs text-gray-300"
+            >
+
           </div>
 
-          <nav id="desktopNav" class="space-y-1"></nav>
+          <div class="text-[8px] text-gray-700 mt-2 leading-5">
+            Optional. Only provide a handle you're comfortable sharing
+            with Bureau leadership. Do not enter passwords or private
+            account information.
+          </div>
 
         </div>
 
 
-        <div class="p-5 border-t border-white/5">
+        <!-- Agreement -->
 
-          <div class="text-[9px] text-gray-700 uppercase tracking-wider mb-3">
-            Current operative
-          </div>
+        <label class="flex gap-3 items-start cursor-pointer">
 
-          <div class="flex items-center gap-3">
+          <input
+            id="privacyCheck"
+            type="checkbox"
+            class="mt-1 accent-gray-500"
+          >
 
-            <div class="w-8 h-8 rounded-full border border-bureau-400/20 flex items-center justify-center">
-              <span class="text-[10px] text-bureau-300">●</span>
-            </div>
+          <span class="text-[9px] text-gray-600 leading-5">
+            I understand that my chosen username is visible to members
+            and that an optional contact handle may be visible to
+            Bureau leadership.
+          </span>
 
-            <div class="min-w-0">
-              <div id="sidebarCodename" class="text-[10px] text-gray-400 truncate">
-                —
-              </div>
+        </label>
 
-              <div class="text-[8px] text-gray-700">
-                LOCAL SESSION
-              </div>
-            </div>
 
-          </div>
+        <button
+          onclick="createIdentity()"
+          class="w-full py-4 rounded-xl border border-gray-500/30 hover:bg-white/5 text-[9px] tracking-[.2em] text-gray-400 hover:text-gray-200 transition"
+        >
+          ESTABLISH IDENTITY
+        </button>
 
+
+        <div
+          id="registerError"
+          class="hidden text-[9px] text-gray-500 text-center"
+        ></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================================
+     MAIN BUREAU
+========================================================= -->
+
+<div id="mainApp" class="hidden-page min-h-screen">
+
+  <!-- Mobile header -->
+
+  <header class="lg:hidden sticky top-0 z-50 bg-[#070907]/95 backdrop-blur border-b border-white/5">
+
+    <div class="h-16 px-5 flex items-center justify-between">
+
+      <div>
+        <div class="text-sm tracking-[.15em] text-gray-200">
+          THE BUREAU
         </div>
 
-      </aside>
+        <div class="text-[8px] tracking-[.2em] text-gray-700">
+          OF CIPHER AND LEADERS
+        </div>
+      </div>
+
+      <button
+        onclick="toggleMobileNav()"
+        class="w-10 h-10 border border-white/10 rounded-lg text-gray-500"
+      >
+        ☰
+      </button>
+
+    </div>
+
+    <div id="mobileNav" class="hidden px-4 pb-4"></div>
+
+  </header>
 
 
-      <!-- =========================
-           CONTENT
-      ========================== -->
+  <div class="flex min-h-screen">
 
-      <main class="flex-1 min-w-0">
+    <!-- Sidebar -->
 
-        <!-- Desktop top status -->
-        <div class="hidden lg:flex h-16 border-b border-white/5 items-center justify-between px-8">
+    <aside class="hidden lg:flex w-64 shrink-0 border-r border-white/5 flex-col">
+
+      <div class="p-6 border-b border-white/5">
+
+        <div class="flex items-center gap-3">
+
+          <div class="w-10 h-10 border border-gray-500/20 rounded-lg flex items-center justify-center">
+            ◆
+          </div>
 
           <div>
-            <div id="pageTitle" class="text-xs tracking-[0.2em] text-gray-400 uppercase">
-              Transmissions
+            <div class="text-sm tracking-[.15em]">
+              THE BUREAU
+            </div>
+
+            <div class="text-[7px] tracking-[.2em] text-gray-700">
+              CIPHER & LEADERS
             </div>
           </div>
 
-          <div class="flex items-center gap-5">
+        </div>
 
-            <div class="flex items-center gap-2 text-[9px] text-gray-600">
-              <span class="pulse-dot w-1.5 h-1.5 rounded-full bg-bureau-300"></span>
-              SESSION ACTIVE
-            </div>
+      </div>
 
-            <div id="topCodename" class="text-[9px] text-gray-600">
+
+      <div class="flex-1 p-4">
+
+        <div class="text-[8px] tracking-[.25em] text-gray-700 px-3 mb-3">
+          CHANNELS
+        </div>
+
+        <nav id="desktopNav" class="space-y-1"></nav>
+
+      </div>
+
+
+      <div class="p-5 border-t border-white/5">
+
+        <div class="text-[8px] text-gray-700 mb-3">
+          CURRENT MEMBER
+        </div>
+
+        <div class="flex items-center gap-3">
+
+          <div class="w-8 h-8 rounded-full border border-gray-500/20 flex items-center justify-center text-[9px]">
+            ◆
+          </div>
+
+          <div class="min-w-0">
+
+            <div
+              id="sideUsername"
+              class="text-[10px] text-gray-400 truncate"
+            >
               —
             </div>
 
+            <div class="text-[7px] text-gray-700">
+              MEMBER
+            </div>
+
           </div>
 
         </div>
 
+      </div>
 
-        <div class="max-w-6xl mx-auto px-5 sm:px-8 py-8 lg:py-10">
+    </aside>
 
-          <!-- =========================
-               TRANSMISSIONS
-          ========================== -->
 
-          <section id="transmissions" class="tab-content fade-up">
+    <!-- Main -->
 
-            <div class="mb-9">
+    <main class="flex-1 min-w-0">
 
-              <div class="text-[9px] tracking-[0.3em] text-bureau-400 uppercase mb-3">
-                Channel 01
+      <div class="hidden lg:flex h-16 px-8 border-b border-white/5 items-center justify-between">
+
+        <div>
+          <div
+            id="pageTitle"
+            class="text-[10px] tracking-[.25em] text-gray-500 uppercase"
+          >
+            Home
+          </div>
+        </div>
+
+        <div class="flex items-center gap-5">
+
+          <div class="flex items-center gap-2 text-[8px] text-gray-700">
+            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+            CHANNEL ACTIVE
+          </div>
+
+          <div
+            id="topUsername"
+            class="text-[8px] text-gray-700"
+          >
+            —
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="max-w-6xl mx-auto px-5 sm:px-8 py-8">
+
+
+        <!-- =================================================
+             HOME
+        ================================================== -->
+
+        <section id="home" class="app-page fade">
+
+          <div class="grid lg:grid-cols-[1.4fr_.6fr] gap-5">
+
+            <div class="panel rounded-2xl p-7 sm:p-9">
+
+              <div class="text-[9px] tracking-[.3em] text-gray-600 mb-4">
+                BUREAU HOME
               </div>
 
-              <h2 class="text-2xl sm:text-3xl text-gray-200 tracking-tight">
-                Transmissions
-              </h2>
+              <h1 class="text-3xl sm:text-4xl text-gray-200">
+                Welcome,
+                <span
+                  id="welcomeUsername"
+                  class="text-gray-500"
+                >
+                  Operative
+                </span>.
+              </h1>
 
-              <p class="text-xs text-gray-600 mt-3 max-w-xl leading-6">
-                Official notes and quiet directives from Bureau leadership.
-                Read-only.
+              <p class="text-xs text-gray-600 leading-7 mt-5 max-w-2xl">
+                Your Bureau terminal is active. Explore the channels,
+                meet other members, test your skills, or leave something
+                interesting behind.
               </p>
+
+              <div class="mt-8 flex flex-wrap gap-2">
+
+                <button
+                  onclick="openPage('chat')"
+                  class="px-5 py-3 rounded-lg border border-white/10 text-[9px] text-gray-500 hover:text-gray-200 hover:bg-white/5"
+                >
+                  OPEN COMMON ROOM
+                </button>
+
+                <button
+                  onclick="openPage('games')"
+                  class="px-5 py-3 rounded-lg border border-white/10 text-[9px] text-gray-500 hover:text-gray-200 hover:bg-white/5"
+                >
+                  ENTER GAME ROOM
+                </button>
+
+              </div>
 
             </div>
 
 
-            <!-- Welcome Terminal -->
-            <div class="bureau-panel rounded-xl overflow-hidden mb-5">
+            <div class="panel rounded-2xl p-7">
+
+              <div class="text-[9px] tracking-wider text-gray-700 mb-6">
+                SESSION
+              </div>
+
+              <div class="space-y-5">
+
+                <div>
+                  <div class="text-[8px] text-gray-700">
+                    MEMBER
+                  </div>
+                  <div
+                    id="homeMember"
+                    class="text-sm text-gray-400 mt-1"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-[8px] text-gray-700">
+                    ACCESS
+                  </div>
+                  <div class="text-[10px] text-gray-500 mt-1">
+                    MEMBER
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-[8px] text-gray-700">
+                    SESSION
+                  </div>
+                  <div class="text-[10px] text-gray-500 mt-1">
+                    ACTIVE
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- Quick rooms -->
+
+          <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <div
+              onclick="openPage('transmissions')"
+              class="panel card-hover rounded-xl p-5 cursor-pointer"
+            >
+              <div class="text-xl text-gray-500 mb-5">◆</div>
+              <div class="text-xs text-gray-400">
+                Transmissions
+              </div>
+              <div class="text-[9px] text-gray-700 mt-2">
+                Bureau announcements.
+              </div>
+            </div>
+
+            <div
+              onclick="openPage('chat')"
+              class="panel card-hover rounded-xl p-5 cursor-pointer"
+            >
+              <div class="text-xl text-gray-500 mb-5">◇</div>
+              <div class="text-xs text-gray-400">
+                Common Room
+              </div>
+              <div class="text-[9px] text-gray-700 mt-2">
+                Member conversation.
+              </div>
+            </div>
+
+            <div
+              onclick="openPage('games')"
+              class="panel card-hover rounded-xl p-5 cursor-pointer"
+            >
+              <div class="text-xl text-gray-500 mb-5">△</div>
+              <div class="text-xs text-gray-400">
+                Game Room
+              </div>
+              <div class="text-[9px] text-gray-700 mt-2">
+                Small challenges.
+              </div>
+            </div>
+
+            <div
+              onclick="openPage('sigil')"
+              class="panel card-hover rounded-xl p-5 cursor-pointer"
+            >
+              <div class="text-xl text-gray-500 mb-5">◇</div>
+              <div class="text-xs text-gray-400">
+                Your Sigil
+              </div>
+              <div class="text-[9px] text-gray-700 mt-2">
+                Personal session mark.
+              </div>
+            </div>
+
+          </div>
+
+
+          <!-- Quote -->
+
+          <div class="panel rounded-xl p-6 mt-5">
+
+            <div class="text-[9px] text-gray-700 mb-3">
+              BUREAU PRINCIPLE
+            </div>
+
+            <div class="text-sm text-gray-500">
+              "Curiosity is more useful than certainty."
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             TRANSMISSIONS
+        ================================================== -->
+
+        <section id="transmissions" class="app-page hidden-page fade">
+
+          <div class="mb-8">
+
+            <div class="text-[9px] tracking-[.3em] text-gray-600">
+              CHANNEL 01
+            </div>
+
+            <h2 class="text-2xl text-gray-200 mt-2">
+              Transmissions
+            </h2>
+
+            <p class="text-xs text-gray-700 mt-3">
+              Official Bureau communications.
+            </p>
+
+          </div>
+
+
+          <div class="space-y-4">
+
+            <article class="panel rounded-xl overflow-hidden">
 
               <div class="px-5 py-3 border-b border-white/5 flex justify-between">
-
-                <span class="text-[9px] tracking-wider text-gray-600">
-                  TRANSMISSION // 001
+                <span class="text-[8px] text-gray-700">
+                  TRANSMISSION 001
                 </span>
 
-                <span class="text-[9px] text-bureau-500">
-                  VERIFIED
+                <span class="text-[8px] text-gray-700">
+                  DIRECTORATE
                 </span>
-
               </div>
 
               <div class="p-6">
 
-                <div class="text-[10px] text-gray-700 mb-4">
-                  FROM: DIRECTORATE
+                <h3 class="text-sm text-gray-400">
+                  Welcome to the Bureau.
+                </h3>
+
+                <p
+                  id="transmissionText"
+                  class="text-xs text-gray-600 leading-7 mt-4 min-h-[90px]"
+                ></p>
+
+              </div>
+
+            </article>
+
+
+            <article class="panel rounded-xl p-6">
+
+              <div class="text-[8px] text-gray-700 mb-4">
+                TRANSMISSION 002
+              </div>
+
+              <h3 class="text-sm text-gray-400">
+                Build things worth showing.
+              </h3>
+
+              <p class="text-xs text-gray-700 leading-6 mt-3">
+                The Bureau isn't a popularity contest.
+                Make something interesting. Share it.
+                Let people improve it.
+              </p>
+
+            </article>
+
+
+            <article class="panel rounded-xl p-6">
+
+              <div class="text-[8px] text-gray-700 mb-4">
+                TRANSMISSION 003
+              </div>
+
+              <h3 class="text-sm text-gray-400">
+                Leave the room better than you found it.
+              </h3>
+
+              <p class="text-xs text-gray-700 leading-6 mt-3">
+                Respect other members, keep private information private,
+                and don't turn every disagreement into a national crisis.
+              </p>
+
+            </article>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             CHAT
+        ================================================== -->
+
+        <section id="chat" class="app-page hidden-page fade">
+
+          <div class="mb-8">
+
+            <div class="text-[9px] tracking-[.3em] text-gray-600">
+              CHANNEL 02
+            </div>
+
+            <h2 class="text-2xl text-gray-200 mt-2">
+              Common Room
+            </h2>
+
+            <p class="text-xs text-gray-700 mt-3">
+              A simple local conversation prototype.
+            </p>
+
+          </div>
+
+
+          <div class="panel rounded-xl overflow-hidden">
+
+            <div
+              id="chatMessages"
+              class="h-[430px] overflow-y-auto p-5 space-y-4"
+            ></div>
+
+
+            <div class="border-t border-white/5 p-4">
+
+              <div class="flex gap-2">
+
+                <input
+                  id="chatInput"
+                  maxlength="300"
+                  placeholder="Transmit a message..."
+                  class="flex-1 bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-xs text-gray-300"
+                  onkeydown="if(event.key==='Enter') sendMessage()"
+                >
+
+                <button
+                  onclick="sendMessage()"
+                  class="px-5 rounded-lg border border-white/10 text-[9px] text-gray-500 hover:text-gray-200 hover:bg-white/5"
+                >
+                  SEND
+                </button>
+
+              </div>
+
+              <div class="text-[8px] text-gray-700 mt-2">
+                Demo mode: messages are stored only in this browser.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             GAMES
+        ================================================== -->
+
+        <section id="games" class="app-page hidden-page fade">
+
+          <div class="mb-8">
+
+            <div class="text-[9px] tracking-[.3em] text-gray-600">
+              CHANNEL 03
+            </div>
+
+            <h2 class="text-2xl text-gray-200 mt-2">
+              Game Room
+            </h2>
+
+            <p class="text-xs text-gray-700 mt-3">
+              Small tests for members who enjoy unnecessary competition.
+            </p>
+
+          </div>
+
+
+          <div class="grid lg:grid-cols-2 gap-5">
+
+            <!-- Memory game -->
+
+            <div class="panel rounded-xl p-6">
+
+              <div class="flex justify-between mb-6">
+
+                <div>
+                  <div class="text-[8px] text-gray-700">
+                    GAME 01
+                  </div>
+
+                  <h3 class="text-sm text-gray-400 mt-1">
+                    Pattern Recall
+                  </h3>
                 </div>
 
                 <div
-                  id="typewriter"
-                  class="text-sm text-gray-400 leading-7 min-h-[120px] terminal-cursor"
-                ></div>
-
-              </div>
-
-            </div>
-
-
-            <!-- Directive -->
-            <div class="grid md:grid-cols-2 gap-5">
-
-              <div class="bureau-panel rounded-xl p-6">
-
-                <div class="flex items-center justify-between mb-5">
-                  <span class="text-[9px] tracking-wider text-gray-600">
-                    DIRECTIVE // 002
-                  </span>
-
-                  <span class="text-[8px] px-2 py-1 rounded border border-white/5 text-gray-600">
-                    OPEN
-                  </span>
+                  id="gameScore"
+                  class="text-[9px] text-gray-700"
+                >
+                  SCORE: 0
                 </div>
 
-                <h3 class="text-sm text-gray-300 mb-3">
-                  Observe before reacting.
-                </h3>
-
-                <p class="text-xs text-gray-600 leading-6">
-                  The Bureau values thoughtful contributions over noise.
-                  Leave something useful behind.
-                </p>
-
               </div>
 
 
-              <div class="bureau-panel rounded-xl p-6">
-
-                <div class="flex items-center justify-between mb-5">
-                  <span class="text-[9px] tracking-wider text-gray-600">
-                    DIRECTIVE // 003
-                  </span>
-
-                  <span class="text-[8px] px-2 py-1 rounded border border-white/5 text-gray-600">
-                    OPEN
-                  </span>
-                </div>
-
-                <h3 class="text-sm text-gray-300 mb-3">
-                  Privacy is a design choice.
-                </h3>
-
-                <p class="text-xs text-gray-600 leading-6">
-                  Share ideas without turning people into data points.
-                </p>
-
-              </div>
-
-            </div>
-
-          </section>
-
-
-          <!-- =========================
-               DROP BOX
-          ========================== -->
-
-          <section id="dropbox" class="tab-content hidden fade-up">
-
-            <div class="mb-9">
-
-              <div class="text-[9px] tracking-[0.3em] text-bureau-400 uppercase mb-3">
-                Channel 02
-              </div>
-
-              <h2 class="text-2xl sm:text-3xl text-gray-200 tracking-tight">
-                The Drop Box
-              </h2>
-
-              <p class="text-xs text-gray-600 mt-3 max-w-xl leading-6">
-                Submit a thought, observation, suggestion, or piece of
-                fictional intelligence.
+              <p class="text-[9px] text-gray-700 leading-5 mb-5">
+                Watch the highlighted sequence, then reproduce it.
               </p>
 
-            </div>
+
+              <div
+                id="gameGrid"
+                class="game-grid max-w-sm mx-auto"
+              ></div>
 
 
-            <div class="grid lg:grid-cols-[1fr_0.8fr] gap-5">
-
-              <!-- Submission -->
-              <div class="bureau-panel rounded-xl p-6">
-
-                <div class="mb-5">
-
-                  <div class="text-[9px] tracking-wider text-gray-600 mb-2">
-                    ANONYMOUS SUBMISSION
-                  </div>
-
-                  <div class="text-xs text-gray-500 leading-6">
-                    Your message is stored locally in this demo.
-                    No IP address, browser fingerprint, or identity data
-                    is intentionally attached to the submission.
-                  </div>
-
-                </div>
-
-                <textarea
-                  id="intelInput"
-                  maxlength="1000"
-                  rows="8"
-                  placeholder="Leave something for the Bureau..."
-                  class="w-full rounded-xl bg-black/30 border border-white/10
-                         focus:border-bureau-400/40 outline-none
-                         px-4 py-4 text-xs text-gray-300
-                         placeholder:text-gray-700 transition"
-                ></textarea>
-
-                <div class="flex items-center justify-between mt-3">
-
-                  <span id="charCount" class="text-[9px] text-gray-700">
-                    0 / 1000
-                  </span>
-
-                  <button
-                    onclick="submitIntel()"
-                    class="px-5 py-3 rounded-lg
-                           border border-bureau-400/30
-                           hover:bg-bureau-900/30
-                           hover:border-bureau-300/50
-                           text-[9px] tracking-[0.18em]
-                           text-gray-400 hover:text-bureau-200
-                           transition"
-                  >
-                    DEPOSIT INTEL →
-                  </button>
-
-                </div>
-
-                <div
-                  id="submissionStatus"
-                  class="hidden mt-5 rounded-lg border border-white/5 bg-black/20 p-4 text-[10px] text-gray-500"
-                ></div>
-
-              </div>
-
-
-              <!-- Info -->
-              <div class="bureau-panel rounded-xl p-6">
-
-                <div class="text-[9px] tracking-wider text-gray-600 mb-5">
-                  PRIVACY NOTE
-                </div>
-
-                <div class="space-y-5">
-
-                  <div>
-                    <div class="text-xs text-gray-400 mb-2">
-                      What this demo does
-                    </div>
-
-                    <p class="text-[10px] text-gray-700 leading-6">
-                      Messages are saved only to this browser's local
-                      storage. Clearing site data removes them.
-                    </p>
-                  </div>
-
-                  <div>
-                    <div class="text-xs text-gray-400 mb-2">
-                      What it does not do
-                    </div>
-
-                    <p class="text-[10px] text-gray-700 leading-6">
-                      It does not provide a real anonymous network,
-                      encryption service, or shared backend.
-                    </p>
-                  </div>
-
-                  <div class="border-t border-white/5 pt-5">
-                    <div class="flex gap-3">
-                      <span class="text-bureau-400">◆</span>
-                      <p class="text-[10px] text-gray-600 leading-6">
-                        A real multi-user Drop Box would require a backend
-                        designed to minimize metadata collection.
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
+              <button
+                onclick="startGame()"
+                class="w-full mt-6 py-3 rounded-lg border border-white/10 text-[9px] text-gray-500 hover:bg-white/5"
+              >
+                START CHALLENGE
+              </button>
 
             </div>
 
 
-            <!-- Local Log -->
+            <!-- Random challenge -->
 
-            <div class="mt-5 bureau-panel rounded-xl overflow-hidden">
+            <div class="panel rounded-xl p-6">
 
-              <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between">
-
-                <span class="text-[9px] tracking-wider text-gray-600">
-                  LOCAL PUBLIC LOG
-                </span>
-
-                <span id="logCount" class="text-[9px] text-gray-700">
-                  0 ENTRIES
-                </span>
-
+              <div class="text-[8px] text-gray-700">
+                GAME 02
               </div>
 
-              <div id="intelLog" class="divide-y divide-white/5">
+              <h3 class="text-sm text-gray-400 mt-1">
+                Bureau Challenge
+              </h3>
 
-                <div class="p-8 text-center text-[10px] text-gray-700">
-                  No local transmissions yet.
-                </div>
-
+              <div
+                id="challengeText"
+                class="min-h-[150px] mt-6 flex items-center justify-center text-center text-xs text-gray-600 leading-7"
+              >
+                Press the button to receive a challenge.
               </div>
+
+              <button
+                onclick="newChallenge()"
+                class="w-full py-3 rounded-lg border border-white/10 text-[9px] text-gray-500 hover:bg-white/5"
+              >
+                GENERATE CHALLENGE
+              </button>
 
             </div>
 
-          </section>
+          </div>
+
+        </section>
 
 
-          <!-- =========================
-               SIGIL VERIFY
-          ========================== -->
+        <!-- =================================================
+             SIGIL
+        ================================================== -->
 
-          <section id="sigil" class="tab-content hidden fade-up">
+        <section id="sigil" class="app-page hidden-page fade">
 
-            <div class="mb-9">
+          <div class="mb-8">
 
-              <div class="text-[9px] tracking-[0.3em] text-bureau-400 uppercase mb-3">
-                Channel 03
-              </div>
-
-              <h2 class="text-2xl sm:text-3xl text-gray-200 tracking-tight">
-                Sigil Verify
-              </h2>
-
-              <p class="text-xs text-gray-600 mt-3 max-w-xl leading-6">
-                A visual signature derived from your local session token.
-              </p>
-
+            <div class="text-[9px] tracking-[.3em] text-gray-600">
+              CHANNEL 04
             </div>
 
+            <h2 class="text-2xl text-gray-200 mt-2">
+              Personal Sigil
+            </h2>
 
-            <div class="grid lg:grid-cols-2 gap-5">
+            <p class="text-xs text-gray-700 mt-3">
+              A visual mark derived from your Bureau session.
+            </p>
 
-              <!-- Sigil -->
-              <div class="bureau-panel rounded-xl p-8 flex flex-col items-center justify-center min-h-[430px]">
+          </div>
 
-                <div class="relative w-64 h-64 flex items-center justify-center">
 
-                  <!-- Outer ring -->
-                  <div class="sigil-ring absolute inset-3 rounded-full border border-bureau-400/20"></div>
+          <div class="grid lg:grid-cols-2 gap-5">
 
-                  <!-- Middle ring -->
-                  <div class="sigil-ring reverse absolute inset-10 rounded-full border border-gray-600/20 border-dashed"></div>
+            <div class="panel rounded-xl min-h-[430px] flex items-center justify-center">
 
-                  <!-- Inner square -->
+              <div class="text-center">
+
+                <div class="sigil mx-auto">
+
+                  <div class="sigil-ring ring1"></div>
+                  <div class="sigil-ring ring2"></div>
+                  <div class="sigil-ring ring3"></div>
+
                   <div
-                    id="sigilShape"
-                    class="absolute w-28 h-28 border border-bureau-300/40 rotate-45 transition-all duration-700"
+                    id="sigilCore"
+                    class="sigil-core"
                   ></div>
 
-                  <!-- Center -->
-                  <div class="absolute text-2xl text-bureau-300 green-glow">
+                  <div class="sigil-center">
                     ◆
                   </div>
 
-                  <!-- Decorative marks -->
-                  <span class="absolute top-2 text-[10px] text-gray-700">+</span>
-                  <span class="absolute bottom-2 text-[10px] text-gray-700">+</span>
-                  <span class="absolute left-2 text-[10px] text-gray-700">+</span>
-                  <span class="absolute right-2 text-[10px] text-gray-700">+</span>
-
                 </div>
 
-                <div class="mt-8 text-center">
-
-                  <div class="text-[9px] tracking-[0.3em] text-gray-700 mb-2">
-                    SESSION SIGIL
-                  </div>
-
-                  <div id="sigilCode" class="text-xs text-gray-500">
-                    GENERATING...
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              <!-- Verification -->
-              <div class="bureau-panel rounded-xl p-7">
-
-                <div class="text-[9px] tracking-wider text-gray-600 mb-6">
-                  VERIFICATION RECORD
-                </div>
-
-                <div class="space-y-5">
-
-                  <div>
-                    <div class="text-[9px] text-gray-700 mb-2">
-                      CODENAME
-                    </div>
-
-                    <div id="verifyCodename" class="text-sm text-gray-300">
-                      —
-                    </div>
-                  </div>
-
-                  <div>
-                    <div class="text-[9px] text-gray-700 mb-2">
-                      SESSION TOKEN HASH
-                    </div>
-
-                    <div
-                      id="tokenHash"
-                      class="break-all text-[10px] text-bureau-400/80 leading-5"
-                    >
-                      —
-                    </div>
-                  </div>
-
-                  <div>
-                    <div class="text-[9px] text-gray-700 mb-2">
-                      STATUS
-                    </div>
-
-                    <div class="flex items-center gap-2 text-[10px] text-gray-500">
-                      <span class="w-1.5 h-1.5 rounded-full bg-bureau-300 pulse-dot"></span>
-                      LOCAL SESSION VERIFIED
-                    </div>
-                  </div>
-
-                  <div class="border-t border-white/5 pt-6">
-
-                    <p class="text-[10px] text-gray-700 leading-6">
-                      This signature is a visual demonstration generated
-                      from your locally stored session token. It is not a
-                      real cryptographic identity system.
-                    </p>
-
-                  </div>
-
+                <div class="text-[9px] tracking-[.3em] text-gray-700 mt-5">
+                  SESSION SIGIL
                 </div>
 
               </div>
 
             </div>
 
-          </section>
 
-        </div>
-      </main>
+            <div class="panel rounded-xl p-7">
 
-    </div>
+              <div class="text-[8px] text-gray-700 mb-7">
+                IDENTITY RECORD
+              </div>
+
+              <div class="space-y-6">
+
+                <div>
+                  <div class="text-[8px] text-gray-700">
+                    USERNAME
+                  </div>
+
+                  <div
+                    id="sigilUsername"
+                    class="text-sm text-gray-400 mt-2"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-[8px] text-gray-700">
+                    SESSION SIGNATURE
+                  </div>
+
+                  <div
+                    id="sigilHash"
+                    class="break-all text-[9px] text-gray-600 mt-2 leading-5"
+                  >
+                    —
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-[8px] text-gray-700">
+                    STATUS
+                  </div>
+
+                  <div class="text-[9px] text-gray-500 mt-2">
+                    ● SESSION ACTIVE
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="border-t border-white/5 mt-8 pt-6">
+
+                <p class="text-[9px] text-gray-700 leading-6">
+                  Your sigil is a visual identifier for this browser
+                  session. It isn't a password or security credential.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             DROP BOX
+        ================================================== -->
+
+        <section id="dropbox" class="app-page hidden-page fade">
+
+          <div class="mb-8">
+
+            <div class="text-[9px] tracking-[.3em] text-gray-600">
+              CHANNEL 05
+            </div>
+
+            <h2 class="text-2xl text-gray-200 mt-2">
+              The Drop Box
+            </h2>
+
+            <p class="text-xs text-gray-700 mt-3">
+              Leave an anonymous idea or observation.
+            </p>
+
+          </div>
+
+
+          <div class="panel rounded-xl p-6">
+
+            <textarea
+              id="dropInput"
+              maxlength="1000"
+              rows="8"
+              placeholder="Deposit something interesting..."
+              class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-4 text-xs text-gray-300"
+            ></textarea>
+
+            <div class="flex items-center justify-between mt-3">
+
+              <span
+                id="dropCount"
+                class="text-[8px] text-gray-700"
+              >
+                0 / 1000
+              </span>
+
+              <button
+                onclick="submitDrop()"
+                class="px-5 py-3 rounded-lg border border-white/10 text-[9px] text-gray-500 hover:bg-white/5"
+              >
+                DEPOSIT
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="panel rounded-xl overflow-hidden mt-5">
+
+            <div class="px-5 py-3 border-b border-white/5">
+              <span class="text-[8px] text-gray-700">
+                LOCAL DROP LOG
+              </span>
+            </div>
+
+            <div id="dropLog"></div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
   </div>
 
+</div>
 
-  <!-- =========================
-       JAVASCRIPT
-  ========================== -->
 
-  <script>
+<!-- Toast -->
 
-    /* --------------------------------
-       Storage Keys
-    -------------------------------- */
+<div id="toast" class="toast panel rounded-xl px-5 py-4">
+  <div
+    id="toastText"
+    class="text-[9px] text-gray-500 leading-5"
+  ></div>
+</div>
 
-    const STORAGE = {
-      token: "bureau_session_token",
-      codename: "bureau_codename",
-      intel: "bureau_local_intel"
+
+<script>
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+const STORAGE = {
+  member: "bureau_member",
+  token: "bureau_token",
+  chat: "bureau_chat",
+  drops: "bureau_drops"
+};
+
+
+/* =========================================================
+   PAGE MANAGEMENT
+========================================================= */
+
+const pages = [
+  "home",
+  "transmissions",
+  "chat",
+  "games",
+  "sigil",
+  "dropbox"
+];
+
+function showPage(id) {
+
+  document.querySelectorAll(".hidden-page").forEach(el => {
+    if (
+      el.id === "splash" ||
+      el.id === "invitation" ||
+      el.id === "briefing" ||
+      el.id === "registration"
+    ) return;
+  });
+
+  [
+    "splash",
+    "invitation",
+    "briefing",
+    "registration"
+  ].forEach(id => {
+    document.getElementById(id).classList.add("hidden-page");
+  });
+
+  document.getElementById("mainApp").classList.add("hidden-page");
+
+  if (id === "main") {
+    document.getElementById("mainApp").classList.remove("hidden-page");
+    return;
+  }
+
+  document.getElementById(id).classList.remove("hidden-page");
+}
+
+
+function openPage(id) {
+
+  document.querySelectorAll(".app-page").forEach(page => {
+    page.classList.add("hidden-page");
+  });
+
+  const target = document.getElementById(id);
+
+  if (!target) return;
+
+  target.classList.remove("hidden-page");
+
+  document.getElementById("pageTitle").textContent =
+    id === "home"
+      ? "Home"
+      : id.replace("dropbox", "The Drop Box");
+
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle(
+      "active",
+      btn.dataset.page === id
+    );
+  });
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  if (id === "transmissions") {
+    startTransmission();
+  }
+
+}
+
+
+/* =========================================================
+   SPLASH
+========================================================= */
+
+setTimeout(() => {
+
+  const boot = document.getElementById("bootText");
+
+  boot.textContent = "CHANNEL ESTABLISHED";
+
+}, 1100);
+
+
+setTimeout(() => {
+
+  if (localStorage.getItem(STORAGE.member)) {
+    enterBureau();
+  } else {
+    showPage("invitation");
+  }
+
+}, 2700);
+
+
+/* =========================================================
+   INVITATION
+========================================================= */
+
+function verifyInvitation() {
+
+  const input =
+    document.getElementById("inviteInput");
+
+  const error =
+    document.getElementById("inviteError");
+
+  const value =
+    input.value.trim().toUpperCase();
+
+  if (value === "CIPHER-2026") {
+
+    error.classList.add("hidden");
+
+    showPage("briefing");
+
+  } else {
+
+    error.textContent =
+      "Invitation not recognized. Check the code and try again.";
+
+    error.classList.remove("hidden");
+
+  }
+
+}
+
+
+document
+  .getElementById("inviteInput")
+  .addEventListener("keydown", event => {
+
+    if (event.key === "Enter") {
+      verifyInvitation();
+    }
+
+  });
+
+
+/* =========================================================
+   IDENTITY
+========================================================= */
+
+function createIdentity() {
+
+  const username =
+    document.getElementById("username")
+      .value.trim();
+
+  const contact =
+    document.getElementById("contactHandle")
+      .value.trim();
+
+  const type =
+    document.getElementById("contactType")
+      .value;
+
+  const consent =
+    document.getElementById("privacyCheck")
+      .checked;
+
+  const error =
+    document.getElementById("registerError");
+
+
+  if (username.length < 3) {
+
+    error.textContent =
+      "Username must contain at least 3 characters.";
+
+    error.classList.remove("hidden");
+    return;
+
+  }
+
+
+  if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
+
+    error.textContent =
+      "Use letters, numbers, underscores, dots, or hyphens.";
+
+    error.classList.remove("hidden");
+    return;
+
+  }
+
+
+  if (!consent) {
+
+    error.textContent =
+      "Please confirm that you understand the identity visibility.";
+
+    error.classList.remove("hidden");
+    return;
+
+  }
+
+
+  const member = {
+    username,
+    contact: contact
+      ? {
+          type,
+          handle: contact
+        }
+      : null,
+
+    joinedAt:
+      new Date().toISOString()
+  };
+
+
+  let token = "";
+
+  if (crypto && crypto.getRandomValues) {
+
+    const bytes =
+      new Uint8Array(24);
+
+    crypto.getRandomValues(bytes);
+
+    token =
+      Array.from(bytes)
+        .map(x =>
+          x.toString(16).padStart(2, "0")
+        )
+        .join("");
+
+  } else {
+
+    token =
+      Math.random().toString(36).slice(2) +
+      Date.now().toString(36);
+
+  }
+
+
+  localStorage.setItem(
+    STORAGE.member,
+    JSON.stringify(member)
+  );
+
+  localStorage.setItem(
+    STORAGE.token,
+    token
+  );
+
+
+  enterBureau();
+
+}
+
+
+/* =========================================================
+   ENTER BUREAU
+========================================================= */
+
+function enterBureau() {
+
+  const raw =
+    localStorage.getItem(STORAGE.member);
+
+  if (!raw) {
+    showPage("invitation");
+    return;
+  }
+
+  const member =
+    JSON.parse(raw);
+
+
+  document.getElementById("mainApp")
+    .classList.remove("hidden-page");
+
+  document.getElementById("splash")
+    .classList.add("hidden-page");
+
+  document.getElementById("invitation")
+    .classList.add("hidden-page");
+
+  document.getElementById("briefing")
+    .classList.add("hidden-page");
+
+  document.getElementById("registration")
+    .classList.add("hidden-page");
+
+
+  updateMemberUI(member);
+
+  buildNavigation();
+  generateSigil();
+  renderChat();
+  renderDrops();
+
+  openPage("home");
+
+}
+
+
+function updateMemberUI(member) {
+
+  const name = member.username;
+
+  document.getElementById("sideUsername")
+    .textContent = name;
+
+  document.getElementById("topUsername")
+    .textContent = name;
+
+  document.getElementById("welcomeUsername")
+    .textContent = name;
+
+  document.getElementById("homeMember")
+    .textContent = name;
+
+  document.getElementById("sigilUsername")
+    .textContent = name;
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+const navItems = [
+  ["home", "Home", "00"],
+  ["transmissions", "Transmissions", "01"],
+  ["chat", "Common Room", "02"],
+  ["games", "Game Room", "03"],
+  ["sigil", "Personal Sigil", "04"],
+  ["dropbox", "The Drop Box", "05"]
+];
+
+
+function buildNavigation() {
+
+  const desktop =
+    document.getElementById("desktopNav");
+
+  const mobile =
+    document.getElementById("mobileNav");
+
+  desktop.innerHTML = "";
+  mobile.innerHTML = "";
+
+
+  navItems.forEach(([id, label, number]) => {
+
+    const button =
+      document.createElement("button");
+
+    button.className =
+      "nav-btn w-full flex items-center gap-3 px-3 py-3 rounded-lg border border-transparent text-left text-[9px] text-gray-600";
+
+    button.dataset.page = id;
+
+    button.innerHTML = `
+      <span class="text-[7px] text-gray-700">${number}</span>
+      <span>${label}</span>
+    `;
+
+    button.onclick = () => openPage(id);
+
+    desktop.appendChild(button);
+
+
+    const mobileButton =
+      button.cloneNode(true);
+
+    mobileButton.onclick = () => {
+
+      openPage(id);
+      toggleMobileNav();
+
     };
 
+    mobile.appendChild(mobileButton);
 
-    /* --------------------------------
-       Codename Generation
-    -------------------------------- */
+  });
 
-    const CODENAME_WORDS = [
-      "Delta",
-      "Cipher",
-      "Echo",
-      "Vector",
-      "North",
-      "Signal",
-      "Quartz",
-      "Orbit",
-      "Atlas",
-      "Nova",
-      "Vigil",
-      "Aster"
-    ];
+}
 
-    function generateCodename() {
 
-      const word =
-        CODENAME_WORDS[
-          Math.floor(Math.random() * CODENAME_WORDS.length)
-        ];
+function toggleMobileNav() {
 
-      const number =
-        Math.floor(Math.random() * 90) + 10;
+  document
+    .getElementById("mobileNav")
+    .classList.toggle("hidden");
 
-      return `Operative-${word}-${number}`;
+}
+
+
+/* =========================================================
+   TRANSMISSION TYPEWRITER
+========================================================= */
+
+let transmissionStarted = false;
+
+const transmission =
+  "Welcome to the Bureau. You are now part of a community built around curiosity, creativity, communication, and leadership. There is no performance score here. Explore the rooms, meet the members, contribute something useful, and remember that privacy is a responsibility shared by everyone.";
+
+function startTransmission() {
+
+  if (transmissionStarted) return;
+
+  transmissionStarted = true;
+
+  const element =
+    document.getElementById("transmissionText");
+
+  let i = 0;
+
+  function type() {
+
+    if (i < transmission.length) {
+
+      element.textContent +=
+        transmission[i];
+
+      i++;
+
+      setTimeout(type, 16);
+
     }
 
+  }
 
-    /* --------------------------------
-       Token Generation
-    -------------------------------- */
+  type();
 
-    function generateToken() {
+}
 
-      if (window.crypto && crypto.getRandomValues) {
 
-        const bytes = new Uint8Array(24);
-        crypto.getRandomValues(bytes);
+/* =========================================================
+   CHAT
+========================================================= */
 
-        return Array.from(bytes)
-          .map(byte => byte.toString(16).padStart(2, "0"))
-          .join("");
+function getChat() {
 
-      }
+  return JSON.parse(
+    localStorage.getItem(STORAGE.chat) || "[]"
+  );
 
-      // Fallback for old browsers
-      return (
-        Date.now().toString(36) +
-        Math.random().toString(36).slice(2) +
-        Math.random().toString(36).slice(2)
+}
+
+
+function saveChat(messages) {
+
+  localStorage.setItem(
+    STORAGE.chat,
+    JSON.stringify(messages.slice(-100))
+  );
+
+}
+
+
+function renderChat() {
+
+  const container =
+    document.getElementById("chatMessages");
+
+  const messages =
+    getChat();
+
+
+  if (!messages.length) {
+
+    container.innerHTML = `
+      <div class="h-full flex items-center justify-center">
+        <div class="text-center">
+          <div class="text-2xl text-gray-700 mb-4">◇</div>
+          <div class="text-[9px] text-gray-700">
+            The room is quiet.
+          </div>
+        </div>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    messages.map(message => `
+
+      <div class="chat-message">
+
+        <div class="flex items-center gap-3 mb-1">
+
+          <span class="text-[9px] text-gray-400">
+            ${escapeHTML(message.username)}
+          </span>
+
+          <span class="text-[7px] text-gray-700">
+            ${escapeHTML(message.time)}
+          </span>
+
+        </div>
+
+        <div class="text-[10px] text-gray-600 leading-5">
+          ${escapeHTML(message.text)}
+        </div>
+
+      </div>
+
+    `).join("");
+
+  container.scrollTop =
+    container.scrollHeight;
+
+}
+
+
+function sendMessage() {
+
+  const input =
+    document.getElementById("chatInput");
+
+  const text =
+    input.value.trim();
+
+  if (!text) return;
+
+
+  const member =
+    JSON.parse(
+      localStorage.getItem(STORAGE.member)
+    );
+
+
+  const messages =
+    getChat();
+
+
+  messages.push({
+
+    username:
+      member.username,
+
+    text,
+
+    time:
+      new Date().toLocaleTimeString(
+        [],
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      )
+
+  });
+
+
+  saveChat(messages);
+
+  input.value = "";
+
+  renderChat();
+
+}
+
+
+/* =========================================================
+   DROP BOX
+========================================================= */
+
+document
+  .getElementById("dropInput")
+  .addEventListener("input", function() {
+
+    document.getElementById("dropCount")
+      .textContent =
+      `${this.value.length} / 1000`;
+
+  });
+
+
+function submitDrop() {
+
+  const input =
+    document.getElementById("dropInput");
+
+  const text =
+    input.value.trim();
+
+  if (!text) {
+
+    showToast(
+      "Nothing deposited."
+    );
+
+    return;
+
+  }
+
+
+  const drops =
+    JSON.parse(
+      localStorage.getItem(STORAGE.drops) || "[]"
+    );
+
+
+  drops.unshift({
+
+    text,
+
+    time:
+      new Date().toLocaleString([], {
+        dateStyle: "medium",
+        timeStyle: "short"
+      })
+
+  });
+
+
+  localStorage.setItem(
+    STORAGE.drops,
+    JSON.stringify(drops.slice(0, 50))
+  );
+
+
+  input.value = "";
+
+  document.getElementById("dropCount")
+    .textContent = "0 / 1000";
+
+  renderDrops();
+
+  showToast(
+    "Transmission deposited locally."
+  );
+
+}
+
+
+function renderDrops() {
+
+  const container =
+    document.getElementById("dropLog");
+
+  const drops =
+    JSON.parse(
+      localStorage.getItem(STORAGE.drops) || "[]"
+    );
+
+
+  if (!drops.length) {
+
+    container.innerHTML = `
+      <div class="p-8 text-center text-[9px] text-gray-700">
+        No deposits yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    drops.map(drop => `
+
+      <div class="p-5 border-b border-white/5">
+
+        <div class="flex justify-between mb-2">
+
+          <span class="text-[8px] text-gray-700">
+            ANONYMOUS
+          </span>
+
+          <span class="text-[7px] text-gray-700">
+            ${escapeHTML(drop.time)}
+          </span>
+
+        </div>
+
+        <div class="text-[10px] text-gray-600 leading-6">
+          ${escapeHTML(drop.text)}
+        </div>
+
+      </div>
+
+    `).join("");
+
+}
+
+
+/* =========================================================
+   SIGIL
+========================================================= */
+
+async function generateSigil() {
+
+  const token =
+    localStorage.getItem(STORAGE.token);
+
+  if (!token) return;
+
+
+  let hash = "";
+
+
+  if (crypto.subtle) {
+
+    const data =
+      new TextEncoder().encode(token);
+
+    const digest =
+      await crypto.subtle.digest(
+        "SHA-256",
+        data
       );
-    }
 
+    hash =
+      Array.from(
+        new Uint8Array(digest)
+      )
+      .map(x =>
+        x.toString(16).padStart(2, "0")
+      )
+      .join("");
 
-    /* --------------------------------
-       Initiate Protocol
-    -------------------------------- */
+  } else {
 
-    function initiateProtocol() {
+    hash = simpleHash(token);
 
-      let token = localStorage.getItem(STORAGE.token);
-      let codename = localStorage.getItem(STORAGE.codename);
+  }
 
-      if (!token) {
-        token = generateToken();
-        localStorage.setItem(STORAGE.token, token);
-      }
 
-      if (!codename) {
-        codename = generateCodename();
-        localStorage.setItem(STORAGE.codename, codename);
-      }
+  document.getElementById("sigilHash")
+    .textContent = hash;
 
-      showDashboard();
-    }
 
+  const core =
+    document.getElementById("sigilCore");
 
-    /* --------------------------------
-       Dashboard
-    -------------------------------- */
 
-    function showDashboard() {
+  const rotation =
+    parseInt(
+      hash.substring(0, 4),
+      16
+    ) % 360;
 
-      const gate = document.getElementById("entryGate");
-      const app = document.getElementById("app");
 
-      gate.classList.add("hidden");
-      app.classList.remove("hidden");
+  core.style.transform =
+    `rotate(${rotation}deg)`;
 
-      const codename =
-        localStorage.getItem(STORAGE.codename) || "Unknown Operative";
 
-      document.getElementById("sidebarCodename").textContent = codename;
-      document.getElementById("topCodename").textContent = codename;
-      document.getElementById("verifyCodename").textContent = codename;
+  const radius =
+    parseInt(
+      hash.substring(4, 6),
+      16
+    ) % 40;
 
-      buildNavigation();
-      updateSigil();
-      renderIntel();
 
-      setTimeout(startTypewriter, 300);
-    }
+  core.style.borderRadius =
+    `${radius}% ${100-radius}% ${radius}% ${100-radius}%`;
 
+}
 
-    /* --------------------------------
-       Navigation
-    -------------------------------- */
 
-    const tabs = [
-      {
-        id: "transmissions",
-        label: "Transmissions",
-        icon: "01"
-      },
-      {
-        id: "dropbox",
-        label: "The Drop Box",
-        icon: "02"
-      },
-      {
-        id: "sigil",
-        label: "Sigil Verify",
-        icon: "03"
-      }
-    ];
+function simpleHash(str) {
 
-    function buildNavigation() {
+  let hash = 2166136261;
 
-      const desktop = document.getElementById("desktopNav");
-      const mobile = document.getElementById("mobileNav");
+  for (let i = 0; i < str.length; i++) {
 
-      desktop.innerHTML = "";
-      mobile.innerHTML = "";
+    hash ^= str.charCodeAt(i);
 
-      tabs.forEach(tab => {
+    hash +=
+      (hash << 1) +
+      (hash << 4) +
+      (hash << 7) +
+      (hash << 8) +
+      (hash << 24);
 
-        const button = createNavButton(tab);
-        desktop.appendChild(button);
+  }
 
-        const mobileButton = createNavButton(tab);
-        mobile.appendChild(mobileButton);
+  return Math.abs(hash >>> 0)
+    .toString(16)
+    .repeat(16)
+    .slice(0, 64);
 
-      });
+}
 
-      setActiveTab("transmissions");
-    }
 
+/* =========================================================
+   GAME: PATTERN RECALL
+========================================================= */
 
-    function createNavButton(tab) {
+let gameSequence = [];
+let playerSequence = [];
+let gameActive = false;
+let score = 0;
 
-      const button = document.createElement("button");
 
-      button.className =
-        "nav-button w-full flex items-center gap-3 px-3 py-3 " +
-        "rounded-lg border border-transparent text-left " +
-        "text-[10px] text-gray-600 hover:text-gray-300 " +
-        "hover:bg-white/[0.02] transition";
+function createGameGrid() {
 
-      button.dataset.tab = tab.id;
+  const grid =
+    document.getElementById("gameGrid");
 
-      button.innerHTML = `
-        <span class="text-[8px] text-gray-700">${tab.icon}</span>
-        <span>${tab.label}</span>
-      `;
+  grid.innerHTML = "";
 
-      button.addEventListener("click", () => {
+  for (let i = 0; i < 16; i++) {
 
-        setActiveTab(tab.id);
+    const cell =
+      document.createElement("button");
 
-        document
-          .getElementById("mobileMenu")
-          .classList.add("hidden");
+    cell.className = "game-cell";
 
-      });
+    cell.onclick = () =>
+      selectGameCell(i);
 
-      return button;
-    }
+    cell.dataset.index = i;
 
+    grid.appendChild(cell);
 
-    function setActiveTab(tabId) {
+  }
 
-      document.querySelectorAll(".tab-content").forEach(section => {
-        section.classList.add("hidden");
-      });
+}
 
-      const activeSection =
-        document.getElementById(tabId);
 
-      if (activeSection) {
-        activeSection.classList.remove("hidden");
+function startGame() {
 
-        activeSection.classList.remove("fade-up");
-        void activeSection.offsetWidth;
-        activeSection.classList.add("fade-up");
-      }
+  createGameGrid();
 
-      document.querySelectorAll(".nav-button").forEach(button => {
+  gameSequence = [
+    Math.floor(Math.random() * 16),
+    Math.floor(Math.random() * 16),
+    Math.floor(Math.random() * 16)
+  ];
 
-        if (button.dataset.tab === tabId) {
-          button.classList.add("nav-active");
-        } else {
-          button.classList.remove("nav-active");
-        }
+  playerSequence = [];
+  gameActive = false;
 
-      });
+  playSequence();
 
-      const titles = {
-        transmissions: "Transmissions",
-        dropbox: "The Drop Box",
-        sigil: "Sigil Verify"
-      };
+}
 
-      document.getElementById("pageTitle").textContent =
-        titles[tabId] || "Terminal";
-    }
 
+function playSequence() {
 
-    function toggleMobileMenu() {
+  const cells =
+    document.querySelectorAll(".game-cell");
 
-      document
-        .getElementById("mobileMenu")
-        .classList.toggle("hidden");
+  let i = 0;
 
-    }
+  const interval =
+    setInterval(() => {
 
+      if (i >= gameSequence.length) {
 
-    /* --------------------------------
-       Typewriter
-    -------------------------------- */
+        clearInterval(interval);
 
-    const transmissionText =
-      "The Bureau does not ask for attention. It asks for awareness. " +
-      "Observe carefully. Question assumptions. Contribute something " +
-      "worth keeping. There is no ranking here, no performance score, " +
-      "and no need to prove that you belong. Quiet work still matters.";
-
-    let typeIndex = 0;
-
-    function startTypewriter() {
-
-      const target =
-        document.getElementById("typewriter");
-
-      if (!target || typeIndex > 0) return;
-
-      function write() {
-
-        if (typeIndex < transmissionText.length) {
-
-          target.textContent += transmissionText[typeIndex];
-          typeIndex++;
-
-          setTimeout(write, 18);
-
-        }
-
-      }
-
-      write();
-    }
-
-
-    /* --------------------------------
-       Drop Box
-    -------------------------------- */
-
-    const intelInput =
-      document.getElementById("intelInput");
-
-    intelInput.addEventListener("input", () => {
-
-      document.getElementById("charCount").textContent =
-        `${intelInput.value.length} / 1000`;
-
-    });
-
-
-    function submitIntel() {
-
-      const input = document.getElementById("intelInput");
-      const status = document.getElementById("submissionStatus");
-
-      const message = input.value.trim();
-
-      if (!message) {
-
-        showStatus(
-          "Nothing deposited. Empty transmissions remain gloriously useless."
-        );
+        gameActive = true;
 
         return;
+
       }
 
-      const entries =
-        JSON.parse(
-          localStorage.getItem(STORAGE.intel) || "[]"
-        );
 
-      entries.unshift({
-        id: cryptoRandomId(),
-        message: message,
-        time: new Date().toLocaleString([], {
-          dateStyle: "medium",
-          timeStyle: "short"
-        })
-      });
+      const cell =
+        cells[gameSequence[i]];
 
-      // Keep local demo storage reasonable
-      const limitedEntries = entries.slice(0, 50);
-
-      localStorage.setItem(
-        STORAGE.intel,
-        JSON.stringify(limitedEntries)
-      );
-
-      input.value = "";
-      document.getElementById("charCount").textContent = "0 / 1000";
-
-      showStatus(
-        "INTEL DEPOSITED. No identity metadata was attached by this interface."
-      );
-
-      renderIntel();
-
-    }
-
-
-    function showStatus(message) {
-
-      const status =
-        document.getElementById("submissionStatus");
-
-      status.textContent = message;
-      status.classList.remove("hidden");
+      cell.classList.add("lit");
 
       setTimeout(() => {
-        status.classList.add("hidden");
-      }, 4500);
+        cell.classList.remove("lit");
+      }, 400);
 
-    }
+      i++;
 
+    }, 650);
 
-    function cryptoRandomId() {
+}
 
-      if (crypto && crypto.getRandomValues) {
 
-        const array = new Uint32Array(2);
-        crypto.getRandomValues(array);
+function selectGameCell(index) {
 
-        return array[0].toString(36) +
-               array[1].toString(36);
+  if (!gameActive) return;
 
-      }
+  playerSequence.push(index);
 
-      return Math.random().toString(36).slice(2);
-    }
 
+  const position =
+    playerSequence.length - 1;
 
-    function renderIntel() {
 
-      const container =
-        document.getElementById("intelLog");
+  if (
+    playerSequence[position] !==
+    gameSequence[position]
+  ) {
 
-      const entries =
-        JSON.parse(
-          localStorage.getItem(STORAGE.intel) || "[]"
-        );
+    gameActive = false;
 
-      document.getElementById("logCount").textContent =
-        `${entries.length} ${entries.length === 1 ? "ENTRY" : "ENTRIES"}`;
+    showToast(
+      "Sequence failed. Humanity survives another round."
+    );
 
-      if (!entries.length) {
+    return;
 
-        container.innerHTML = `
-          <div class="p-8 text-center text-[10px] text-gray-700">
-            No local transmissions yet.
-          </div>
-        `;
+  }
 
-        return;
-      }
 
-      container.innerHTML = entries.map(entry => `
+  if (
+    playerSequence.length ===
+    gameSequence.length
+  ) {
 
-        <article class="p-5 hover:bg-white/[0.015] transition">
+    score++;
 
-          <div class="flex items-center justify-between mb-3">
+    document.getElementById("gameScore")
+      .textContent =
+      `SCORE: ${score}`;
 
-            <span class="text-[9px] text-bureau-500">
-              ANONYMOUS // LOCAL
-            </span>
+    gameActive = false;
 
-            <span class="text-[8px] text-gray-700">
-              ${escapeHTML(entry.time)}
-            </span>
+    showToast(
+      "Pattern verified."
+    );
 
-          </div>
+  }
 
-          <p class="text-xs text-gray-500 leading-6 break-words">
-            ${escapeHTML(entry.message)}
-          </p>
+}
 
-        </article>
 
-      `).join("");
+/* =========================================================
+   GAME: RANDOM CHALLENGE
+========================================================= */
 
-    }
+const challenges = [
 
+  "Find something in your room that you have never properly inspected. Study it for one minute.",
 
-    /* --------------------------------
-       HTML Escaping
-       Prevents submitted text from
-       becoming executable markup.
-    -------------------------------- */
+  "Invent a three-word name for a fictional Bureau department.",
 
-    function escapeHTML(value) {
+  "Explain how a refrigerator works without using the words cold, heat, or electricity.",
 
-      const div = document.createElement("div");
-      div.textContent = value;
+  "Design a fictional invention that solves a tiny everyday annoyance.",
 
-      return div.innerHTML;
-    }
+  "Think of a problem that everyone accepts as normal. Could it be redesigned?",
 
+  "Write down the strangest useful idea you can think of.",
 
-    /* --------------------------------
-       Sigil
-    -------------------------------- */
+  "Create a symbol that represents curiosity using only three shapes."
 
-    async function updateSigil() {
+];
 
-      const token =
-        localStorage.getItem(STORAGE.token);
 
-      if (!token) return;
+function newChallenge() {
 
-      let hash;
+  const index =
+    Math.floor(
+      Math.random() *
+      challenges.length
+    );
 
-      if (window.crypto && crypto.subtle) {
+  document.getElementById("challengeText")
+    .textContent =
+    challenges[index];
 
-        const data =
-          new TextEncoder().encode(token);
+}
 
-        const digest =
-          await crypto.subtle.digest(
-            "SHA-256",
-            data
-          );
 
-        hash =
-          Array.from(new Uint8Array(digest))
-            .map(byte =>
-              byte.toString(16).padStart(2, "0")
-            )
-            .join("");
+/* =========================================================
+   TOAST
+========================================================= */
 
-      } else {
+let toastTimer;
 
-        hash = simpleHash(token);
 
-      }
+function showToast(message) {
 
-      document.getElementById("tokenHash").textContent =
-        hash;
+  const toast =
+    document.getElementById("toast");
 
-      document.getElementById("sigilCode").textContent =
-        hash.slice(0, 8).toUpperCase() +
-        " · " +
-        hash.slice(8, 16).toUpperCase();
+  document.getElementById("toastText")
+    .textContent = message;
 
-      /* Make visual signature unique */
-      const shape =
-        document.getElementById("sigilShape");
+  toast.classList.add("show");
 
-      const rotation =
-        parseInt(hash.slice(0, 4), 16) % 360;
+  clearTimeout(toastTimer);
 
-      const radius =
-        parseInt(hash.slice(4, 6), 16) % 35 + 15;
+  toastTimer =
+    setTimeout(() => {
 
-      shape.style.transform =
-        `rotate(${rotation}deg)`;
+      toast.classList.remove("show");
 
-      shape.style.borderRadius =
-        `${radius}% ${100-radius}% ${radius}% ${100-radius}%`;
+    }, 3500);
 
-      shape.style.width =
-        `${90 + (parseInt(hash.slice(6, 8), 16) % 60)}px`;
+}
 
-      shape.style.height =
-        `${90 + (parseInt(hash.slice(8, 10), 16) % 60)}px`;
 
-    }
+/* =========================================================
+   SECURITY
+========================================================= */
 
+function escapeHTML(value) {
 
-    function simpleHash(str) {
+  const div =
+    document.createElement("div");
 
-      let hash = 2166136261;
+  div.textContent = value;
 
-      for (let i = 0; i < str.length; i++) {
+  return div.innerHTML;
 
-        hash ^= str.charCodeAt(i);
-        hash +=
-          (hash << 1) +
-          (hash << 4) +
-          (hash << 7) +
-          (hash << 8) +
-          (hash << 24);
+}
 
-      }
 
-      return Math.abs(hash >>> 0)
-        .toString(16)
-        .padStart(8, "0")
-        .repeat(8)
-        .slice(0, 64);
+/* =========================================================
+   INITIALIZE
+========================================================= */
 
-    }
+createGameGrid();
 
-
-    /* --------------------------------
-       Clock
-    -------------------------------- */
-
-    function updateClock() {
-
-      const now = new Date();
-
-      const time =
-        now.toLocaleTimeString([], {
-          hour12: false
-        });
-
-      const entryClock =
-        document.getElementById("entryClock");
-
-      if (entryClock) {
-        entryClock.textContent = time;
-      }
-
-    }
-
-    setInterval(updateClock, 1000);
-    updateClock();
-
-
-    /* --------------------------------
-       Existing Session
-    -------------------------------- */
-
-    window.addEventListener("DOMContentLoaded", () => {
-
-      const token =
-        localStorage.getItem(STORAGE.token);
-
-      const codename =
-        localStorage.getItem(STORAGE.codename);
-
-      if (token && codename) {
-        showDashboard();
-      }
-
-    });
-
-  </script>
+</script>
 
 </body>
 </html>
+```
