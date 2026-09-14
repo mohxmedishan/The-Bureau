@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE BUREAU // TERMINAL</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        term_green: '#00ff41',
+                        term_dark: '#0a0a0a',
+                        term_gray: '#1a1a1a',
+                    },
+                    fontFamily: {
+                        mono: ['"Share Tech Mono"', '"Courier New"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #030303;
+            color: #00ff41;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanline Effect */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Subtle screen flicker */
+        .flicker {
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.98; }
+            50% { opacity: 1; }
+            100% { opacity: 0.99; }
+        }
+
+        /* Glow effects */
+        .glow-text {
+            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff4133;
+        }
+        
+        .glow-border {
+            box-shadow: 0 0 10px #00ff4144, inset 0 0 10px #00ff4144;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #00ff41; border: 1px solid #000; }
+
+        .hidden-ui { display: none; }
+        
+        .cursor-blink::after {
+            content: '█';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body class="font-mono h-screen flex flex-col flicker selection:bg-term_green selection:text-black">
+    <div class="scanlines"></div>
+
+    <!-- ENTRY GATE -->
+    <div id="entry-gate" class="flex-1 flex flex-col items-center justify-center p-4">
+        <h1 class="text-6xl mb-2 glow-text tracking-widest text-center">THE BUREAU</h1>
+        <p class="mb-12 text-sm opacity-75 text-center max-w-md cursor-blink">SECURE INTRANET PROTOCOL // UNAUTHORIZED ACCESS STRICTLY PROHIBITED.</p>
+        
+        <button onclick="initiateProtocol()" class="border border-term_green px-8 py-3 text-xl hover:bg-term_green hover:text-black transition-colors duration-200 glow-border uppercase tracking-widest">
+            Initiate Protocol
+        </button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="hidden-ui flex-1 flex flex-col md:flex-row h-screen p-2 md:p-6 gap-6">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-full md:w-64 flex flex-col border border-term_green glow-border bg-term_dark p-4 shrink-0">
+            <div class="border-b border-term_green pb-4 mb-4">
+                <h2 class="text-2xl glow-text uppercase">BUREAU_SYS</h2>
+                <p class="text-xs mt-2">ID: <span id="ui-codename" class="text-white"></span></p>
+                <p class="text-xs">STATUS: <span class="animate-pulse">ONLINE</span></p>
+            </div>
+            
+            <nav class="flex flex-col gap-2 flex-1">
+                <button onclick="switchTab('transmissions')" class="nav-btn text-left px-3 py-2 border border-transparent hover:border-term_green hover:bg-term_gray transition-all active-tab bg-term_gray border-term_green">
+                    > TRANSMISSIONS
+                </button>
+                <button onclick="switchTab('dropbox')" class="nav-btn text-left px-3 py-2 border border-transparent hover:border-term_green hover:bg-term_gray transition-all">
+                    > THE DROP BOX
+                </button>
+                <button onclick="switchTab('sigil')" class="nav-btn text-left px-3 py-2 border border-transparent hover:border-term_green hover:bg-term_gray transition-all">
+                    > SIGIL VERIFY
+                </button>
+            </nav>
+
+            <button onclick="purgeSession()" class="mt-4 text-left px-3 py-2 text-red-500 hover:bg-red-900/30 border border-red-500/50 transition-all text-sm uppercase">
+                [X] Purge Session
+            </button>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col border border-term_green glow-border bg-term_dark relative overflow-hidden">
+            
+            <!-- TRANSMISSIONS TAB -->
+            <div id="tab-transmissions" class="tab-content h-full p-6 flex flex-col overflow-y-auto">
+                <h3 class="text-xl mb-6 glow-text uppercase border-b border-term_green pb-2">Incoming Transmissions</h3>
+                <div id="transmission-feed" class="flex flex-col gap-6 text-sm md:text-base leading-relaxed max-w-4xl">
+                    <!-- Feed generated by JS -->
+                </div>
+            </div>
+
+            <!-- DROP BOX TAB -->
+            <div id="tab-dropbox" class="tab-content hidden-ui h-full p-6 flex flex-col overflow-y-auto">
+                <h3 class="text-xl mb-2 glow-text uppercase border-b border-term_green pb-2">The Drop Box</h3>
+                <p class="text-xs mb-6 opacity-75">All submissions are anonymized. IP tracking disabled. Metadata stripped.</p>
+                
+                <div class="flex-1 flex flex-col gap-4">
+                    <div class="flex-1 border border-term_green p-4 bg-term_gray overflow-y-auto" id="public-log">
+                        <div class="opacity-50 text-xs mb-4">-- SECURE LOG INITIALIZED --</div>
+                        <!-- Log entries injected here -->
+                    </div>
+                    
+                    <form onsubmit="submitIntel(event)" class="flex gap-2 h-16">
+                        <input type="text" id="intel-input" required placeholder="Enter intel here..." class="flex-1 bg-black border border-term_green text-term_green px-4 outline-none focus:glow-border font-mono">
+                        <button type="submit" class="border border-term_green px-6 hover:bg-term_green hover:text-black transition-colors">SUBMIT</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SIGIL VERIFY TAB -->
+            <div id="tab-sigil" class="tab-content hidden-ui h-full p-6 flex flex-col items-center justify-center">
+                <h3 class="text-xl mb-8 glow-text uppercase absolute top-6 left-6 border-b border-term_green pb-2 w-[calc(100%-3rem)] text-left">Cryptographic Sigil</h3>
+                
+                <div class="text-center">
+                    <p class="mb-8 max-w-md text-sm opacity-80">This unique geometric hash confirms your identity to other operatives without revealing your codename.</p>
+                    
+                    <div id="sigil-canvas-container" class="w-64 h-64 border border-term_green glow-border mx-auto flex flex-wrap content-start bg-black relative p-2">
+                        <!-- Geometric sigil generated via JS -->
+                    </div>
+                    
+                    <p class="mt-6 text-xs break-all px-8 opacity-50" id="hash-display"></p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Constants & Generators
+        const prefixes = ["Operative", "Cipher", "Phantom", "Shadow", "Ghost", "Echo", "Specter", "Wraith"];
+        const suffixes = ["Alpha", "Bravo", "Delta", "Omega", "Zero", "Prime", "Nexus", "Void"];
+        
+        const directives = [
+            "[DIRECTIVE 44-A] All operatives are to monitor Sector 7. Unexplained anomalies detected in financial routing.",
+            "Reminder: Burn protocols are active. Do not retain local copies of extraction manifests.",
+            "The package has been secured. Operative 'Ghost-Zero' is MIA. Assume compromise."
+        ];
+
+        // State
+        let currentCodename = "";
+        let sessionToken = "";
+
+        // Initialization
+        window.onload = () => {
+            const storedToken = localStorage.getItem('bureau_token');
+            const storedName = localStorage.getItem('bureau_codename');
+            
+            if (storedToken && storedName) {
+                currentCodename = storedName;
+                sessionToken = storedToken;
+                showDashboard();
+            }
+        };
+
+        // Entry Gate Logic
+        function initiateProtocol() {
+            // Generate random identity
+            const p = prefixes[Math.floor(Math.random() * prefixes.length)];
+            const s = suffixes[Math.floor(Math.random() * suffixes.length)];
+            const n = Math.floor(Math.random() * 999) + 1;
+            
+            currentCodename = `${p}-${s}-${n}`;
+            
+            // Generate pseudo-crypto token
+            sessionToken = 'SEC-' + btoa(currentCodename + Date.now() + Math.random()).substring(0, 32);
+            
+            localStorage.setItem('bureau_codename', currentCodename);
+            localStorage.setItem('bureau_token', sessionToken);
+            
+            showDashboard();
+        }
+
+        function showDashboard() {
+            document.getElementById('entry-gate').classList.add('hidden-ui');
+            document.getElementById('dashboard').classList.remove('hidden-ui');
+            document.getElementById('ui-codename').textContent = currentCodename;
+            
+            initTransmissions();
+            initDropBox();
+            generateSigil();
+        }
+
+        function purgeSession() {
+            localStorage.removeItem('bureau_token');
+            localStorage.removeItem('bureau_codename');
+            localStorage.removeItem('bureau_dropbox_logs');
+            location.reload();
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-ui'));
+            // Remove active state from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-term_gray', 'border-term_green');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden-ui');
+            // Highlight active button (basic DOM traversal based on event target)
+            event.currentTarget.classList.add('bg-term_gray', 'border-term_green');
+        }
+
+        // Transmissions Logic (Typewriter Effect)
+        function initTransmissions() {
+            const feed = document.getElementById('transmission-feed');
+            if (feed.innerHTML.trim() !== "") return; // Prevent re-running if already done
+
+            let delay = 0;
+            directives.forEach((text, index) => {
+                const el = document.createElement('div');
+                el.className = "border-l-2 border-term_green pl-4 py-1";
+                const timestamp = new Date(Date.now() - (10000000 / (index+1))).toISOString().replace('T', ' ').substring(0, 19);
+                
+                el.innerHTML = `<span class="text-xs opacity-50 block mb-1">${timestamp} // ROOT</span><span id="type-${index}" class="cursor-blink"></span>`;
+                feed.appendChild(el);
+
+                setTimeout(() => { typeWriter(text, `type-${index}`, 30); }, delay);
+                delay += (text.length * 30) + 1500;
+            });
+        }
+
+        function typeWriter(text, elementId, speed) {
+            let i = 0;
+            const el = document.getElementById(elementId);
+            el.classList.add('cursor-blink');
+            function type() {
+                if (i < text.length) {
+                    el.innerHTML = text.substring(0, i + 1);
+                    i++;
+                    setTimeout(type, speed + (Math.random() * 20)); // slight randomization for realism
+                } else {
+                    el.classList.remove('cursor-blink');
+                }
+            }
+            type();
+        }
+
+        // Drop Box Logic
+        function initDropBox() {
+            const logContainer = document.getElementById('public-log');
+            const storedLogs = JSON.parse(localStorage.getItem('bureau_dropbox_logs') || '[]');
+            
+            // Clear existing except header
+            logContainer.innerHTML = '<div class="opacity-50 text-xs mb-4">-- SECURE LOG INITIALIZED --</div>';
+            
+            storedLogs.forEach(log => appendLogToUI(log));
+        }
+
+        function submitIntel(e) {
+            e.preventDefault();
+            const input = document.getElementById('intel-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const logEntry = {
+                id: Math.random().toString(36).substring(2, 9),
+                timestamp: new Date().toISOString().substring(11, 19),
+                data: text
+            };
+
+            // Save to LocalStorage (Simulating a shared database)
+            const storedLogs = JSON.parse(localStorage.getItem('bureau_dropbox_logs') || '[]');
+            storedLogs.push(logEntry);
+            localStorage.setItem('bureau_dropbox_logs', JSON.stringify(storedLogs));
+
+            appendLogToUI(logEntry);
+            input.value = '';
+            
+            // Scroll to bottom
+            const logContainer = document.getElementById('public-log');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function appendLogToUI(log) {
+            const logContainer = document.getElementById('public-log');
+            const div = document.createElement('div');
+            div.className = "mb-2 font-mono break-words";
+            div.innerHTML = `<span class="opacity-50 text-xs">[${log.timestamp}]</span> <span class="text-white">UNKNOWN:</span> ${log.data}`;
+            logContainer.appendChild(div);
+        }
+
+        // Sigil Verify Logic (Generative Art based on Token)
+        function generateSigil() {
+            const container = document.getElementById('sigil-canvas-container');
+            container.innerHTML = ''; // clear
+            
+            document.getElementById('hash-display').innerText = "SHA-SIM// " + sessionToken;
+
+            // Generate a 10x10 grid of blocks based on character codes of the token
+            let asciiSum = 0;
+            for(let i=0; i<sessionToken.length; i++) {
+                asciiSum += sessionToken.charCodeAt(i);
+            }
+
+            // Pseudo-random generator seeded by token string
+            let seed = asciiSum;
+            function random() {
+                let x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            }
+
+            for(let i=0; i<100; i++) {
+                const block = document.createElement('div');
+                block.style.width = '10%';
+                block.style.height = '10%';
+                
+                const rand = random();
+                if (rand > 0.7) {
+                    block.style.backgroundColor = '#00ff41';
+                    block.style.boxShadow = '0 0 5px #00ff41';
+                } else if (rand > 0.4) {
+                    block.style.backgroundColor = '#1a1a1a';
+                } else {
+                    block.style.backgroundColor = 'transparent';
+                }
+                
+                container.appendChild(block);
+            }
+        }
+    </script>
+</body>
+</html>
